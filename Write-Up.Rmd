@@ -1,0 +1,56 @@
+---
+title: "Practical Machine Learning Write-Up"
+author: "Kevin Siswandi"
+date: "17 December 2015"
+output: html_document
+---
+
+Reading Data
+```{r}
+#Exploratory Analysis shows that some values are #DIV/0, this should be treated as missing values.
+training <- read.csv("pml-training.csv", na.strings=c("NA", "#DIV/0!"))
+testing <- read.csv("pml-testing.csv", na.strings=c("NA", "#DIV/0!"))
+```
+
+Data Slicing
+```{r}
+dim(training)
+
+str(training)
+
+library(caret)
+
+# Partition into training set 60% + CV set 40%
+inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
+myTrain <- training[inTrain,]
+myCV <- training[-inTrain,]
+
+dim(myTrain)
+dim(myCV)
+```
+
+Removing zero covariates
+
+```{r}
+nzv <- nearZeroVar(myTrain)
+myTrain <- myTrain[, -nzv]
+```
+
+First variable (id) should be omitted
+
+```{r}
+myTrain <- myTrain[, -1]
+```
+
+Some variables have high counts of NA's and therefore should be excluded from the model.
+```{r}
+summary(myTrain)
+```
+
+Model
+
+```{r}
+modFit <- train(classe ~ ., data=myTrain, method="rf")
+pred <- predict(modFit, newdata=myCV)
+```
+
