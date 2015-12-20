@@ -21,6 +21,7 @@ str(training)
 library(caret)
 
 # Partition into training set 60% + CV set 40%
+set.seed(12345)
 inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
 myTrain <- training[inTrain,]
 myCV <- training[-inTrain,]
@@ -42,15 +43,43 @@ First variable (id) should be omitted
 myTrain <- myTrain[, -1]
 ```
 
-Some variables have high counts of NA's and therefore should be excluded from the model.
+Some variables have high counts of NA's (`r 11529/11776`%) and therefore should be removed.
 ```{r}
+dim(myTrain)
 summary(myTrain)
+
+#Get the variables without NAs
+myTrain <- myTrain[,apply(myTrain, 2, function(x) !any(is.na(x)))]
+
+dim(myTrain)
 ```
 
 Model
 
 ```{r}
-modFit <- train(classe ~ ., data=myTrain, method="rf")
+set.seed(12345)
+control <- trainControl(method="cv", number=5)
+modFit <- train(classe ~ ., data=myTrain, method="rf", trControl=control)
 pred <- predict(modFit, newdata=myCV)
+
+table(myCV$classe, pred)
+
 ```
 
+Writing the answers
+
+```{r}
+answers <- predict(modFit, testing)
+
+answers
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(answers)
+```
