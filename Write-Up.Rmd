@@ -38,7 +38,7 @@ dim(myCV)
 summary(myTrain)
 ```
 
-Notice that there are a few variables with just one unique value, all NAs, or very skewed. These variables will have insignificant predictive power and we would remove such zero covariates by doing the following.
+Notice that there are a few variables with just one unique value, all NAs, or very imbalanced. These variables will have insignificant predictive power and we would remove such zero covariates by doing the following.
 
 ```{r}
 nzv <- nearZeroVar(myTrain)
